@@ -4,6 +4,7 @@ import "./index.scss";
 import { routeCreator, RouteKeys } from "../../constants";
 import { AtButton, AtTabBar, AtTabs, AtTabsPane } from "taro-ui";
 import Counter from "../../components/Counter";
+import Bar from "../../components/Bar";
 
 const tabStyle =
   "padding: 100px 50px;background-color: #FAFBFC;text-align: center;";
@@ -12,7 +13,8 @@ export default class Index extends Component {
     super(props);
   }
   state = {
-    current: 0
+    current: 0,
+    progress: 0
   };
   /**
    * 指定config的类型声明为: Taro.Config
@@ -33,6 +35,12 @@ export default class Index extends Component {
   componentDidMount() {
     //third step
     console.log("componentDidMount");
+    const internal = setInterval(() => {
+      if (this.state.progress >= 100) {
+        clearInterval(internal);
+      }
+      this.setState({ progress: this.state.progress + 1 });
+    }, 1000);
   }
 
   componentWillUnmount() {
@@ -56,16 +64,71 @@ export default class Index extends Component {
 
   onTabChange = current => this.setState({ current });
 
+  gotoWebView = () => {
+    Taro.navigateTo(routeCreator(RouteKeys.H5));
+  };
+
   render() {
     const tabList = [
       { title: "待办事项", text: "8" },
       { title: "拍照", text: "nothing" },
       { title: "通讯录", dot: true }
     ];
-    const { current } = this.state;
+    const { current, progress } = this.state;
+    const tableConfig = [
+      {
+        color: "black",
+        progress: progress
+      },
+      {
+        color: "red",
+        progress: 10
+      },
+      {
+        color: "orange",
+        progress: 20
+      },
+      {
+        color: "yellow",
+        progress: 30
+      },
+      {
+        color: "green",
+        progress: 40
+      },
+      {
+        color: "blue",
+        progress: 50
+      },
+      {
+        color: "purple",
+        progress: 60
+      },
+      {
+        color: "black",
+        progress: 70
+      }
+    ];
     return (
       <View className="index">
-        <Counter />
+        <View
+          style={{
+            width: "400rpx",
+            height: "256rpx",
+            borderBottom: "2rpx solid #000000",
+            borderLeft: "2rpx solid #000000"
+          }}
+        >
+          {tableConfig.map(item => (
+            <Bar
+              key={item.color}
+              bgColor={item.color}
+              progress={item.progress}
+            />
+          ))}
+        </View>
+        <View style={{ height: "300rpx" }} />
+        <AtButton onClick={this.gotoWebView}>go to webView</AtButton>
         <AtButton onClick={this.gotoPage}>goto next page</AtButton>
         <AtTabBar
           fixed
@@ -75,7 +138,7 @@ export default class Index extends Component {
         />
         <AtTabs current={current} tabList={tabList} onClick={this.onTabChange}>
           {tabList.map((tab, idx) => (
-            <AtTabsPane key={idx} current={current} index={idx}>
+            <AtTabsPane key={tab.title} current={current} index={idx}>
               <View style={tabStyle}>{tab.title}</View>
             </AtTabsPane>
           ))}
